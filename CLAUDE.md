@@ -95,7 +95,12 @@ Changing a menu item, mnemonic, shortcut or action ID means editing all of them,
 
 - `test/fixtures/fake-pi.mjs` is a stand-in Pi subprocess used to test `PiClient` and `App` without the real agent. It answers `get_state` and rejects `switch_session` when the path contains `fail-session`.
 - `App`'s constructor takes an optional `clientFactory` so tests can inject a fake-backed `PiClient`. `test/app.test.ts` reaches into private methods via `app as unknown as AppInternals` — this is the established pattern for testing `switchWorkingDirectory` and `loadRecentSession`.
-- `test/probe-*.cjs` and `test/cdp-*.mjs` are **diagnostic scaffolds, not tests**. The `probe-*.cjs` trio drives the renderer inside Electron with a stubbed `window.turbo` and prints a JSON report of what the File menu, caption and keyboard handling actually did — run one with `.\node_modules\electron\dist\electron.exe test\probe-menu.cjs`. The `cdp-*.mjs` pair talks to the running **Tauri** app over the WebView2 CDP port (`WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9333`) to evaluate expressions and capture PNGs.
+- `test/probe-*.cjs` and `test/cdp-*.mjs` are **diagnostic scaffolds, not tests** — they print a report of what the UI actually did, so they stay out of the npm test glob.
+  - `test/probe-menu.cjs`, `test/probe-caption.cjs`, `test/probe-keyboard.cjs` — load `renderer/index.html` in Electron against a stubbed `window.turbo` and report what the File menu, the frameless-window caption and the keyboard handling did. Run one with `.\node_modules\electron\dist\electron.exe test\probe-menu.cjs`.
+  - `test/probe-live-cdp.mjs` — exercises the running **Tauri** app's real DOM and menu keyboard handling in-process over the WebView2 CDP port.
+  - `test/cdp-eval.mjs`, `test/cdp-shot.mjs` — evaluate expressions in, and capture PNGs of, the running Tauri app.
+
+  The CDP scaffolds need the app launched with `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9333`.
 
 CI (`.github/workflows/check.yml`) runs `npm run check` on Node 20, 22 and 24, on Ubuntu and Windows.
 

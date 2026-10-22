@@ -6,3 +6,10 @@ dist/
 .DS_Store
 Thumbs.db
 
+# Rust / Tauri build artifacts
+src-tauri/target/
+src-tauri/gen/schemas
+
+# tac agentic layer
+.tac/runs/
+.tac/events.jsonl

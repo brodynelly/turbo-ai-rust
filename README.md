@@ -70,7 +70,7 @@
 | **`F7`** | View Unified Git Diff |
 | **`F8`** | Run Tests (`npm test` via Pi) |
 | **`F9`** | Run Build (`npm run build` via Pi) |
-| **`F10`** | Toggle Top Menu Bar |
+| **`F10`** | Open the top menu bar / toggle it closed |
 | **`Alt+F..H`** | Direct menu hotkeys (`Alt+F` File, `Alt+O` Options, etc.) |
 | **`Ctrl+F`** | Filter project tree |
 | **`Ctrl+L`** | Clear agent message history |
@@ -114,6 +114,52 @@ npm start
 ```bash
 npm start -- --dir C:/path/to/project
 ```
+
+### 🖥️ Desktop app (Tauri v2)
+
+The same Turbo Pascal 7 experience runs as a real windowed desktop application — no terminal required, and no Chromium bundled (the OS WebView is used instead):
+
+```bash
+# Build and launch the desktop app
+npm run desktop
+
+# Release build + NSIS installer
+npm run desktop:build
+```
+
+The desktop app lives in `src-tauri/`: a Rust backend that owns the Pi RPC
+subprocess plus git, session, filesystem and env I/O, and an HTML/CSS renderer in
+`renderer/` that recreates the DOS/VGA UI — 10 menus, tiled FILES/AGENT/MESSAGE
+windows, F1–F10 hotkeys, model/session/diff/API-key dialogs, and all slash
+commands. `renderer/turbo-provider.js` installs the `window.turbo` bridge over
+Tauri IPC (46 methods), so the renderer never touches the filesystem directly.
+
+The window has **no title bar at all**. It is created with `decorations: false`,
+so the OS draws neither a caption nor caption buttons, and the app draws no
+caption strip of its own either — the DOS menu bar is the topmost element and the
+UI starts at the very top edge of the window.
+
+Window affordances therefore live in the menu bar: drag its background (the empty
+space after `Help`) to move the window, and double-click that background to
+toggle maximize. `Alt+X` or `File → Exit` closes the app. Native **Save As** and
+**Change Directory** dialogs, a right-click **Copy/Paste/Select All** menu,
+taskbar app identity and no web zoom shortcuts all still apply. The original TUI
+(`npm run dev` / `npm start`) remains fully functional.
+
+Requires the Rust toolchain (`rustup`) — on Windows also MSVC Build Tools.
+
+#### Menu keyboard navigation
+
+`F10` opens the menu bar (and toggles it closed), arrows move within and between
+menus, `Home`/`End` jump, `Enter` commits the selected item, `Esc` closes, and
+`Alt`+letter opens a menu directly (both `Alt+F` and the Windows menu-mode
+"tap Alt, then F" sequence). Plain letters commit an item while a menu is open.
+Requires the `core:window:allow-*` permissions granted in
+`src-tauri/capabilities/default.json`.
+
+### 📝 Vim navigation
+
+Normal mode (everywhere except the message input): `h`/`j`/`k`/`l` move (tree: collapse/expand), `gg`/`G` jump to top/bottom, `Ctrl+D`/`Ctrl+U` half-page, `i` focuses the input (insert mode), `:` opens the command line prefilled with `/`, `/` finds files, `?` opens help, `Ctrl+W h/j/k/l` switches windows (`Ctrl+W w` cycles; in the input it deletes the word before the cursor). Dialog lists (model/session/provider) also navigate with `j`/`k`/`gg`/`G`/`Ctrl+D`/`Ctrl+U`.
 
 Changing the directory from the File menu reconnects Pi in the selected project and starts a new backend session. If the new connection fails, the current project and session stay active.
 

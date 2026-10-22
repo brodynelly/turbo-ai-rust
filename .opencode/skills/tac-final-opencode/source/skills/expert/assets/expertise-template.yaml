@@ -1,0 +1,43 @@
+# Expertise: <domain>
+# Mental model for agents working in this domain. NOT a source of truth: the code is.
+# Maintained by /tac-final:expert improve. Keep under the line limit in references/expertise-format.md.
+
+domain: <domain>
+last_validated: <YYYY-MM-DD>
+line_limit: 400
+
+overview:
+  purpose: "<what this domain does, 1-2 sentences>"
+  boundaries: "<what is in and out of this domain>"
+  stack: "<frameworks, libraries, storage>"
+
+core_files:
+  - path: "<path/to/file.ext>"
+    role: "<what lives here>"
+    key_symbols: ["<FunctionOrClass>", "<another>"]
+
+key_operations:
+  - name: "<operation, e.g. create invoice>"
+    entry: "<path/to/file.ext:function>"
+    flow: "<the steps, briefly>"
+    gotchas: ["<edge case or invariant>"]
+
+data_model:
+  - entity: "<name>"
+    defined_in: "<path>"
+    invariants: ["<rule that must always hold>"]
+
+conventions:
+  - "<pattern agents must follow in this domain>"
+
+integration_points:
+  - system: "<other domain or external service>"
+    via: "<API, queue, table>"
+
+testing:
+  commands: ["<narrow test command for this domain>"]
+  key_tests: ["<path/to/test>"]
+
+known_issues:
+  - issue: "<description>"
+    workaround: "<how to handle it>"

@@ -1,0 +1,76 @@
+# tac-final ADW trigger: label an issue "adw" to have an agent plan, build, test, review, and open a PR.
+#
+# Install: copy to .github/workflows/tac-adw.yml, add an ANTHROPIC_API_KEY repository secret, and create an
+# "adw" label. Review the permissions and allowed tools below before enabling; adapt the allowedTools list to
+# the commands your validation stack needs. Pin PLUGIN_REF to a tag or commit you have reviewed.
+
+name: tac ADW
+
+on:
+  issues:
+    types: [labeled]
+
+concurrency:
+  group: tac-adw-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  adw:
+    if: github.event.label.name == 'adw'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    env:
+      PLUGIN_REPO: brodynelly/bnelly-claude-software   # marketplace repo that contains plugins/tac-final
+      PLUGIN_REF: main                                  # pin to a reviewed tag or commit
+      WORKFLOW: plan_build_review_fix
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Install your project's dependencies here so validation commands can run, for example:
+      # - run: npm ci
+
+      - name: Install Claude Code and the tac-final plugin
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          git clone --depth 1 --branch "$PLUGIN_REF" "https://github.com/$PLUGIN_REPO" "$RUNNER_TEMP/marketplace"
+
+      - name: Configure git identity
+        run: |
+          git config user.name "tac-adw[bot]"
+          git config user.email "tac-adw@users.noreply.github.com"
+
+      - name: Run ADW
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          TAC_GUARDRAILS: "on"
+        run: |
+          plugin="$RUNNER_TEMP/marketplace/plugins/tac-final"
+          export TAC_CLAUDE_ARGS="--plugin-dir $plugin --permission-mode acceptEdits --max-turns 80 --allowedTools \"Bash(npm *)\" \"Bash(npx *)\" \"Bash(git *)\" \"Bash(gh issue view *)\" \"Bash(ls *)\""
+          bash "$plugin/skills/adw/scripts/adw.sh" -w "$WORKFLOW" --pr --issue "${{ github.event.issue.number }}"
+
+      - name: Upload run logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tac-adw-${{ github.event.issue.number }}
+          path: .tac/
+          if-no-files-found: ignore
+          include-hidden-files: true
+
+      - name: Comment on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" --body "tac ADW run failed or escalated. Logs are attached to workflow run ${{ github.run_id }}."

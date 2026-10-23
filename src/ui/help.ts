@@ -109,9 +109,9 @@ export class AboutDialog {
 			"Retro DOS Frontend for Pi Agent",
 			"",
 			"A loving homage to",
-			"Turbo Pascal 7.1",
-			"Copyright (c) 1983, 1997",
-			"Borland International, Inc.",
+			"Turbo Pascal 7.0 / Borland's",
+			"Turbo Vision UI conventions.",
+			"Not affiliated w/ Borland or Idera.",
 		];
 
 		let textY = y + 2;
@@ -154,7 +154,7 @@ export const ABOUT_TEXT = [
 	"Retro DOS Frontend for Pi Agent",
 	"",
 	"A loving homage to",
-	"Turbo Pascal 7.1",
-	"Copyright (c) 1983, 1997",
-	"Borland International, Inc.",
+	"Turbo Pascal 7.0 / Borland's",
+	"Turbo Vision UI conventions.",
+	"Not affiliated w/ Borland or Idera.",
 ];
